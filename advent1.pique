@@ -142,5 +142,11 @@ def main (args)
   set groups (collate lines nil nil)
   set summed (sum-groups groups)
   set sorted (tail-sort summed)
-  print (last sorted)
+  print "advent1" (last sorted)
+
+  set count (length sorted)
+  set top-three
+    slice sorted (- count 3) count
+  set total (sum top-three)
+  print "advent2" total
   return 0
