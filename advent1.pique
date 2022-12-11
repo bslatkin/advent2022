@@ -1,0 +1,47 @@
+import "comparison"
+import "functional"
+import "lists"
+import "io"
+import "sort"
+import "strings"
+import "utils"
+
+
+def collate (lines current-group all-groups)
+  if (equal lines nil)
+    block
+      set final-groups (prepend current-group all-groups)
+      return (reverse final-groups)
+
+  set current-line (first lines)
+  set remaining-lines (rest lines)
+  set group-done (equal current-line "")
+
+  set next-current-group
+    if group-done
+      nil
+      prepend (string-to-integer current-line) current-group
+
+  set next-all-groups
+    if group-done
+      prepend current-group all-groups
+      all-groups
+
+  return
+    collate remaining-lines next-current-group next-all-groups
+
+
+def sum-groups (groups)
+  return
+    map
+      lambda (x) (sum x)
+      groups
+
+
+def main (args)
+  set lines (read-all)
+  set groups (collate lines nil nil)
+  set summed (sum-groups groups)
+  set sorted (sort summed)
+  print (last sorted)
+  return 0
