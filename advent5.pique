@@ -1,0 +1,121 @@
+import "comparison"
+import "control"
+import "destructuring"
+import "functional"
+import "io"
+import "lists"
+import "strings"
+
+import "utils"
+
+
+# set STACKS
+#   list
+#     list "N" "Z"
+#     list "D" "C" "M"
+#     list "P"
+
+
+set STACKS
+  list
+    list "V" "C" "W" "L" "R" "M" "F" "Q"
+    list "L" "Q" "D"
+    list "B" "N" "C" "W" "G" "R" "S" "P"
+    list "G" "Q" "B" "H" "D" "C" "L"
+    list "S" "Z" "F" "L" "G" "V"
+    list "P" "N" "G" "D"
+    list "W" "C" "F" "V" "P" "Z" "D"
+    list "S" "M" "D" "P" "C"
+    list "C" "P" "M" "V" "T" "W" "N" "Z"
+
+
+export STACKS
+
+
+def map-helper (map-func values index result)
+  if (not values)
+    return (reverse result)
+
+  set current (first values)
+  set next-values (rest values)
+  set map-value (map-func index current)
+  set next-index (+ 1 index)
+  set next-result (prepend map-value result)
+
+  return (map-helper map-func next-values next-index next-result)
+
+
+def map-with-index (map-func values)
+  return (map-helper map-func values 0 nil)
+
+
+def replace-index (the-list index new-value)
+  def helper (current-index value)
+    if (equal current-index index)
+      return new-value
+      return value
+
+  return (map-with-index helper the-list)
+
+
+export replace-index
+
+
+def parse-move (line)
+  set suffix
+    substr line 5 (strlen line)
+  set-many (quantity-string after) (split suffix " from ")
+  set-many (start-string end-string) (split after " to ")
+  return
+    list
+      string-to-integer quantity-string
+      - (string-to-integer start-string) 1
+      - (string-to-integer end-string) 1
+
+
+export parse-move
+
+
+def push-stack (all-stacks stack-index value)
+  set current (index all-stacks stack-index)
+  set updated (prepend value current)
+  set next-stacks (replace-index all-stacks stack-index updated)
+  return next-stacks
+
+
+def pop-stack (all-stacks stack-index)
+  set current (index all-stacks stack-index)
+  set value (first current)
+  set updated (rest current)
+  set next-stacks (replace-index all-stacks stack-index updated)
+  return
+    list value next-stacks
+
+
+def handle-move (count start end stacks)
+  if (not count)
+    return stacks
+
+  set next-count (- count 1)
+  set-many (value after-pop) (pop-stack stacks start)
+  set after-push (push-stack after-pop end value)
+
+  return (handle-move next-count start end after-push)
+
+
+export handle-move
+
+
+def fold-move (stacks move)
+  set-many (count start end) move
+  return (handle-move count start end stacks)
+
+
+def main (args)
+  set lines (read-all)
+  set moves (map parse-move lines)
+  set stacks (fold fold-move moves STACKS)
+  set tops (map first stacks)
+  set joined (join "" tops)
+  print joined
+  return 0

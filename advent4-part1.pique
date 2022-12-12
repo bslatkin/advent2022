@@ -9,18 +9,6 @@ import "strings"
 import "utils"
 
 
-def split (the-string delimiter)
-  set index (find the-string delimiter)
-  if (equal index -1)
-    raise "Delimiter not found"
-
-  set start (substr the-string 0 index)
-  set end
-    substr the-string (+ index 1) (strlen the-string)
-
-  return (list start end)
-
-
 def extract-range (the-string)
   set-many (start end) (split the-string "-")
   set start-number (string-to-integer start)

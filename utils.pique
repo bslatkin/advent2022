@@ -1,6 +1,22 @@
 import "destructuring"
 import "io"
 import "lists"
+import "strings"
+
+
+def split (the-string delimiter)
+  set index (find the-string delimiter)
+  if (equal index -1)
+    raise "Delimiter not found"
+
+  set start (substr the-string 0 index)
+  set delimiter-size (strlen delimiter)
+  set end
+    substr the-string (+ index delimiter-size) (strlen the-string)
+
+  return (list start end)
+
+export split
 
 
 def handle-error (e)
