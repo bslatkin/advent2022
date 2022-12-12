@@ -1,0 +1,76 @@
+import "comparison"
+import "control"
+import "destructuring"
+import "functional"
+import "io"
+import "lists"
+import "strings"
+
+import "utils"
+
+
+def rest-string (the-string)
+  set size (strlen the-string)
+  if (equal size 1)
+    return ""
+
+  return (substr the-string 1 size)
+
+
+def get-codepoints (the-string result)
+  if (equal the-string "")
+    return (reverse result)
+
+  set codepoint (substr the-string 0 1)
+  set next-string (rest-string the-string)
+  set next-result (prepend codepoint result)
+
+  return (get-codepoints next-string next-result)
+
+
+def get-compartments (rucksack)
+  set size (strlen rucksack)
+  set half
+    floor (/ size 2)
+  set left (substr rucksack 0 half)
+  set right (substr rucksack half size)
+  return
+    list
+      get-codepoints left nil
+      get-codepoints right nil
+
+
+def find-overlap (left right)
+  if (not left)
+    raise "Rucksacks should always have one overlap"
+
+  set item (first left)
+  if (contains right item)
+    return item
+
+  set next-left (rest left)
+  return (find-overlap next-left right)
+
+
+def get-overlap (rucksack)
+  set-many (left right) rucksack
+  return (find-overlap left right)
+
+
+set PRIORITIES
+  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+
+def get-priority (item)
+  set index (find PRIORITIES item)
+  return (+ index 1)
+
+
+def main (args)
+  set lines (read-all)
+  set compartments (map get-compartments lines)
+  set overlaps (map get-overlap compartments)
+  set priorities (map get-priority overlaps)
+  set total (sum priorities)
+  print total
+  return 0
