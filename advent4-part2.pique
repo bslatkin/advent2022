@@ -1,0 +1,83 @@
+import "comparison"
+import "control"
+import "destructuring"
+import "functional"
+import "io"
+import "lists"
+import "strings"
+
+import "utils"
+
+
+def split (the-string delimiter)
+  set index (find the-string delimiter)
+  if (equal index -1)
+    raise "Delimiter not found"
+
+  set start (substr the-string 0 index)
+  set end
+    substr the-string (+ index 1) (strlen the-string)
+
+  return (list start end)
+
+
+def extract-range (the-string)
+  set-many (start end) (split the-string "-")
+  set start-number (string-to-integer start)
+  set end-number (string-to-integer end)
+  return (list start-number end-number)
+
+
+def extract-pair (the-string)
+  set-many (left right) (split the-string ",")
+  set left-range (extract-range left)
+  set right-range (extract-range right)
+  return (list left-range right-range)
+
+
+def is-overlapping (child-start child-end parent-start parent-end)
+  set is-contained
+    and
+      >= child-start parent-start
+      <= child-end parent-end
+
+  set left-overlap
+    and
+      <= child-start parent-start
+      >= child-end parent-start
+
+  set right-overlap
+    and
+      <= child-start parent-end
+      >= child-end parent-end
+
+  return (or is-contained left-overlap right-overlap)
+
+
+def either-overlapping (pair)
+  set-many
+    form
+      left-start left-end
+      right-start right-end
+    pair
+
+  return
+    or
+      is-overlapping left-start left-end right-start right-end
+      is-overlapping right-start right-end left-start left-end
+
+
+def count-true (item)
+  if item
+    return 1
+    return 0
+
+
+def main (args)
+  set lines (read-all)
+  set pairs (map extract-pair lines)
+  set overlapping (map either-overlapping pairs)
+  set counts (map count-true overlapping)
+  set total (sum counts)
+  print total
+  return 0
