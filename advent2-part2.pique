@@ -1,0 +1,90 @@
+import "control"
+import "destructuring"
+import "functional"
+import "io"
+import "lists"
+import "strings"
+
+import "utils"
+
+
+set THEIR_ROCK "A"
+set THEIR_PAPER "B"
+set THEIR_SCISSORS "C"
+set EXPECT_LOSS "X"
+set EXPECT_DRAW "Y"
+set EXPECT_WIN "Z"
+set MY_ROCK 1
+set MY_PAPER 2
+set MY_SCISSORS 3
+
+
+# Wish I had a dictionary type here...
+def determine-win (their-play)
+  switch
+    case (equal their-play THEIR_ROCK)
+      return MY_PAPER
+    case (equal their-play THEIR_PAPER)
+      return MY_SCISSORS
+    case (equal their-play THEIR_SCISSORS)
+      return MY_ROCK
+    default
+      raise "Not reachable"
+
+
+def determine-draw (their-play)
+  switch
+    case (equal their-play THEIR_ROCK)
+      return MY_ROCK
+    case (equal their-play THEIR_PAPER)
+      return MY_PAPER
+    case (equal their-play THEIR_SCISSORS)
+      return MY_SCISSORS
+    default
+      raise "Not reachable"
+
+
+def determine-loss (their-play)
+  switch
+    case (equal their-play THEIR_ROCK)
+      return MY_SCISSORS
+    case (equal their-play THEIR_PAPER)
+      return MY_ROCK
+    case (equal their-play THEIR_SCISSORS)
+      return MY_PAPER
+    default
+      raise "Not reachable"
+
+
+def round-score (round)
+  set-many (their-play outcome) round
+  switch
+    case (equal outcome EXPECT_LOSS)
+      return
+        + 0 (determine-loss their-play)
+    case (equal outcome EXPECT_DRAW)
+      return
+        + 3 (determine-draw their-play)
+    case (equal outcome EXPECT_WIN)
+      return
+        + 6 (determine-win their-play)
+    default
+      raise "Not reachable"
+
+
+def extract-round (line)
+  set index (find line " ")
+  set their-play (substr line 0 index)
+  set outcome
+    substr line (+ index 1) (strlen line)
+  return
+    list their-play outcome
+
+
+def main (args)
+  set lines (read-all)
+  set rounds (map extract-round lines)
+  set scores (map round-score rounds)
+  set total (sum scores)
+  print total
+  return 0
