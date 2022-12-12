@@ -1,0 +1,83 @@
+import "control"
+import "destructuring"
+import "functional"
+import "io"
+import "lists"
+import "strings"
+
+import "utils"
+
+
+set THEIR_ROCK "A"
+set THEIR_PAPER "B"
+set THEIR_SCISSORS "C"
+set MY_ROCK "X"
+set MY_PAPER "Y"
+set MY_SCISSORS "Z"
+
+
+set DRAWS
+  list
+    list THEIR_ROCK MY_ROCK
+    list THEIR_PAPER MY_PAPER
+    list THEIR_SCISSORS MY_SCISSORS
+
+set THEIR_WIN
+  list
+    list THEIR_ROCK MY_SCISSORS
+    list THEIR_PAPER MY_ROCK
+    list THEIR_SCISSORS MY_PAPER
+
+set MY_WIN
+  list
+    list THEIR_ROCK MY_PAPER
+    list THEIR_PAPER MY_SCISSORS
+    list THEIR_SCISSORS MY_ROCK
+
+
+def shape-score (my-play)
+  switch
+    case (equal my-play MY_ROCK)
+      return 1
+    case (equal my-play MY_PAPER)
+      return 2
+    case (equal my-play MY_SCISSORS)
+      return 3
+    default
+      raise "Not reachable"
+
+
+def result-score (round)
+  switch
+    case (contains THEIR_WIN round)
+      return 0
+    case (contains DRAWS round)
+      return 3
+    case (contains MY_WIN round)
+      return 6
+    default
+      raise "Not reachable"
+
+
+def round-score (round)
+  set-many (their-play my-play) round
+  return
+    + (shape-score my-play) (result-score round)
+
+
+def extract-round (line)
+  set index (find line " ")
+  set their-play (substr line 0 index)
+  set my-play
+    substr line (+ index 1) (strlen line)
+  return
+    list their-play my-play
+
+
+def main (args)
+  set lines (read-all)
+  set rounds (map extract-round lines)
+  set scores (map round-score rounds)
+  set total (sum scores)
+  print total
+  return 0
