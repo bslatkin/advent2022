@@ -157,14 +157,19 @@ def collate-sizes (accumulated value)
   return (prepend value accumulated)
 
 
-def filter-size (value)
+def get-root (value)
   set-many (directory size) value
-  return (<= size 100000)
+  return (equal "/" directory)
 
 
-def sum-directories (accumulated value)
-  set-many (directory size) value
-  return (+ accumulated size)
+# def filter-size (value)
+#   set-many (directory size) value
+#   set after-space (- 70000000 size)
+#   return (
+#   70000000
+#   30000000
+#   return (<= size 100000)
+
 
 
 def main (args)
@@ -174,7 +179,25 @@ def main (args)
   set flattened (apply extend sizes)
   set sorted (tail-sort flattened)
   set merged (fold collate-sizes sorted nil)
-  set filtered (filter filter-size merged)
-  set totaled (fold sum-directories filtered 0)
-  print totaled
+
+  set root (filter get-root merged)
+  set-many (root-dir root-size) (first root)
+  set free-space (- 70000000 root-size)
+  set needed-space (- 30000000 free-space)
+
+  def frees-enough-space (value)
+    set-many (directory size) value
+    return (>= size needed-space)
+
+  set possible-deletes (filter frees-enough-space merged)
+  set swapped
+    map
+      lambda (value) (reverse value)
+      possible-deletes
+  set sorted-deletes (tail-sort swapped)
+  print sorted-deletes
+  # print possible-deletes
+  # set best-delete (first possible-deletes)
+  # print best-delete
+
   return 0
