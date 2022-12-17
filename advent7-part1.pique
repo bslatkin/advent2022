@@ -1,0 +1,128 @@
+import "comparison"
+import "control"
+import "destructuring"
+import "functional"
+import "io"
+import "lists"
+import "strings"
+
+import "utils"
+
+
+def get-command-output (lines accumulated)
+  if (not lines)
+    return (list accumulated lines)
+
+  set current (first lines)
+
+  if (equal
+        substr current 0 1
+        "$")
+    return (list accumulated lines)
+
+  set remaining (rest lines)
+  set next-accumulated (append accumulated current)
+  return (get-command-output remaining next-accumulated)
+
+
+def parse-command (line)
+  # Assume it's prefixed with "$ "
+  set suffix
+    substr line 2 (strlen line)
+
+  if (equal suffix "ls")
+    return (list suffix "")
+
+  # Must be a "cd" command with one space separator
+  return (split suffix " ")
+
+
+def pop-path (path)
+  set index (rfind path "/")
+  if (equal index -1)
+    raise "Could not pop path"
+
+  return (substr path 0 index)
+
+
+def push-path (path child)
+  if (equal path "/")
+    return
+      concat (list path child)
+    return
+      concat (list path "/" child)
+
+
+def change-directory (path target)
+  return
+    switch
+      case (equal target "..")
+        pop-path path
+      case (equal target "/")
+        "/"
+      default
+        push-path path target
+
+
+def parse-line (path line)
+  set-many (prefix name) (split line " ")
+  if (equal prefix "dir")
+    return nil
+
+  set file-path (push-path path name)
+  set file-size (string-to-integer prefix)
+
+  return (list file-path file-size)
+
+
+def parse-sizes (path output accumulated)
+  if (not output)
+    return accumulated
+
+  set line (first output)
+  set remaining (rest output)
+  set found (parse-line path line)
+  set next-accumulated
+    if found
+      prepend found accumulated
+      accumulated
+
+  return
+    parse-sizes path remaining next-accumulated
+
+
+def traverse-ls (lines path all-sizes)
+  set-many (output remaining) (get-command-output lines nil)
+  set sizes (parse-sizes path output nil)
+  set next-all-sizes (extend sizes all-sizes)
+  return (traverse remaining path next-all-sizes)
+
+
+def traverse-cd (target lines path all-sizes)
+  set next-path (change-directory path target)
+  return (traverse lines next-path all-sizes)
+
+
+def traverse (lines path all-sizes)
+  if (not lines)
+    return all-sizes
+
+  set current-line (first lines)
+  set remaining (rest lines)
+  set-many (command arg) (parse-command current-line)
+
+  print "handling" command arg
+
+  if (equal command "ls")
+    return (traverse-ls remaining path all-sizes)
+    return (traverse-cd arg remaining path all-sizes)
+
+
+def main (args)
+  set lines (read-all)
+  set result (traverse lines "/" nil)
+  print result
+  return 0
+
+
+(export-all)
