@@ -5,6 +5,7 @@ import "lists"
 import "io"
 import "sort"
 import "strings"
+
 import "utils"
 
 
@@ -37,104 +38,6 @@ def sum-groups (groups)
     map
       lambda (x) (sum x)
       groups
-
-
-def maybe-next-two (the-list)
-  if (equal the-list nil)
-    return
-      list nil nil nil
-
-  set a (first the-list)
-  set after-a (rest the-list)
-
-  if (equal after-a nil)
-    return
-      list a nil nil
-
-  set b (first after-a)
-  set after-b (rest after-a)
-  return
-    list a b after-b
-
-
-def merge-pending (pending finished)
-  if pending
-    block
-      set-many (a b next-pending) (maybe-next-two pending)
-      return
-        merge a b nil next-pending finished
-
-  if (equal
-        rest finished
-        nil)
-    return (first finished)
-
-  return
-    merge-pending finished nil
-
-
-def choose-first (a b)
-  if (not a)
-    return false
-
-  if (not b)
-    return true
-
-  set a-value (first a)
-  set b-value (first b)
-  return (<= a-value b-value)
-
-
-def merge (a b accumulated pending finished)
-  if (not
-        or a b)
-    return
-      merge-pending pending
-        prepend (reverse accumulated) finished
-
-  if (choose-first a b)
-    return
-      merge (rest a) b
-        prepend (first a) accumulated
-        pending
-        finished
-    return
-      merge a (rest b)
-        prepend (first b) accumulated
-        pending
-        finished
-
-
-def sorted-pair (a b)
-  if (<= a b)
-    return (list a b)
-    return (list b a)
-
-
-def split-pairs (remaining pairs)
-  if (not remaining)
-    return pairs
-
-  set a (first remaining)
-  set a-after (rest remaining)
-
-  if (not a-after)
-    return
-      prepend (list a) pairs
-
-  set b (first a-after)
-  set b-after (rest a-after)
-  set next-pairs
-    prepend (sorted-pair a b) pairs
-
-  return
-    split-pairs b-after next-pairs
-
-
-def tail-sort (values)
-  set pending (split-pairs values nil)
-  return
-    merge-pending pending nil
 
 
 def main (args)

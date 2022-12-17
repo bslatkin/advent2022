@@ -42,7 +42,8 @@ def pop-path (path)
   if (equal index -1)
     raise "Could not pop path"
 
-  return (substr path 0 index)
+  return
+    substr path 0 index
 
 
 def push-path (path child)
@@ -69,7 +70,7 @@ def parse-line (path line)
   if (equal prefix "dir")
     return nil
 
-  set file-path (push-path path name)
+  set file-path (list path name)
   set file-size (string-to-integer prefix)
 
   return (list file-path file-size)
@@ -111,17 +112,71 @@ def traverse (lines path all-sizes)
   set remaining (rest lines)
   set-many (command arg) (parse-command current-line)
 
-  print "handling" command arg
-
   if (equal command "ls")
     return (traverse-ls remaining path all-sizes)
     return (traverse-cd arg remaining path all-sizes)
 
 
+def widen-paths (path accumulated)
+  if (or
+        not path
+        equal path "/")
+    return (prepend "/" accumulated)
+
+  set next-path (pop-path path)
+  set next-accumulated (prepend path accumulated)
+
+  return (widen-paths next-path next-accumulated)
+
+
+def widen-size (size-tuple)
+  set-many
+    form (path name) size
+    size-tuple
+  set all-paths (widen-paths path nil)
+  set all-sizes
+    map
+      lambda (directory) (list directory size)
+      all-paths
+  return all-sizes
+
+
+def collate-sizes (accumulated value)
+  if (not accumulated)
+    return (list value)
+
+  set-many (last-key last-total) (first accumulated)
+  set-many (key delta) value
+
+  if (equal last-key key)
+    return
+      prepend
+        list key (+ last-total delta)
+        rest accumulated
+
+  return (prepend value accumulated)
+
+
+def filter-size (value)
+  set-many (directory size) value
+  return (<= size 100000)
+
+
+def sum-directories (accumulated value)
+  set-many (directory size) value
+  return (+ accumulated size)
+
+
 def main (args)
   set lines (read-all)
-  set result (traverse lines "/" nil)
-  print result
+  set files (traverse lines "/" nil)
+  set sizes (map widen-size files)
+  set flattened (apply extend sizes)
+  set sorted (tail-sort flattened)
+  set merged (fold collate-sizes sorted nil)
+  set filtered (filter filter-size merged)
+  set totaled (fold sum-directories filtered 0)
+  print totaled
   return 0
 
 
