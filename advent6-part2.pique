@@ -1,0 +1,65 @@
+import "comparison"
+import "control"
+import "destructuring"
+import "functional"
+import "io"
+import "lists"
+import "strings"
+
+import "utils"
+
+
+def check-different (buffer)
+  if (equal
+        strlen buffer
+        1)
+    return true
+
+  set current (substr buffer 0 1)
+  set next-buffer
+    substr buffer 1 (strlen buffer)
+
+  if (equal
+        find next-buffer current
+        -1)
+    return (check-different next-buffer)
+    return false
+
+
+def window (count buffer remaining)
+  if (not remaining)
+    raise "Nothing remains!"
+
+  set next-count (+ count 1)
+  set next-char (substr remaining 0 1)
+  set next-remaining
+    if (>
+          strlen remaining
+          1)
+      substr remaining 1 (strlen remaining)
+      ""
+  set next-buffer
+    concat (list buffer next-char)
+
+  if (<=
+        strlen next-buffer
+        14)
+    return (window next-count next-buffer next-remaining)
+
+  set narrow-buffer (substr next-buffer 1 15)
+
+  if (check-different narrow-buffer)
+    return (list next-count narrow-buffer)
+
+  return (window next-count narrow-buffer next-remaining)
+
+
+def print-window (line)
+  set result (window 0 "" line)
+  print result
+
+
+def main (args)
+  set lines (read-all)
+  map print-window lines
+  return 0
