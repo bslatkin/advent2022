@@ -162,16 +162,6 @@ def get-root (value)
   return (equal "/" directory)
 
 
-# def filter-size (value)
-#   set-many (directory size) value
-#   set after-space (- 70000000 size)
-#   return (
-#   70000000
-#   30000000
-#   return (<= size 100000)
-
-
-
 def main (args)
   set lines (read-all)
   set files (traverse lines "/" nil)
@@ -196,8 +186,5 @@ def main (args)
       possible-deletes
   set sorted-deletes (tail-sort swapped)
   print sorted-deletes
-  # print possible-deletes
-  # set best-delete (first possible-deletes)
-  # print best-delete
 
   return 0

@@ -1,0 +1,48 @@
+import "comparison"
+import "control"
+import "destructuring"
+import "functional"
+import "io"
+import "lists"
+import "strings"
+
+import "utils"
+
+
+def make-row (line accumulated)
+  if (not line)
+    return (reverse accumulated)
+
+  set char (substr line 0 1)
+  set remaining
+    if (equal
+          strlen line
+          1)
+      ""
+      substr line 1 (strlen line)
+  set number (string-to-integer char)
+  set next-accumulated (prepend number accumulated)
+
+  return (make-row remaining next-accumulated)
+
+
+def make-grid (lines)
+  return
+    map
+      lambda (line) (make-row line nil)
+      lines
+
+
+def get-cell (grid x y)
+  set row (index grid y)
+  set cell (index row x)
+  return cell
+
+
+def main (args)
+  set lines (read-all)
+  set grid (make-grid lines)
+  print grid
+  print (get-cell grid 0 0)
+  print (get-cell grid 4 3)
+  return 0
