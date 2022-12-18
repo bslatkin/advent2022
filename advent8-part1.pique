@@ -39,10 +39,87 @@ def get-cell (grid x y)
   return cell
 
 
+def maybe-get-cell (grid x y)
+  return
+    guard
+      lambda (e) nil
+      lambda () (get-cell grid x y)
+
+
+def get-sight-line (grid x-start y-start x-offset y-offset accumulated)
+  set x (+ x-start x-offset)
+  set y (+ y-start y-offset)
+  set cell (maybe-get-cell grid x y)
+
+  if (equal cell nil)
+    return (reverse accumulated)
+
+  set next-accumulated (prepend cell accumulated)
+  return
+    get-sight-line grid x y x-offset y-offset next-accumulated
+
+
+def any-higher (my-height sight-line)
+  if (not sight-line)
+    return false
+
+  set other (first sight-line)
+  set remaining (rest sight-line)
+  if (<= other my-height)
+    return true
+
+  return
+    any-higher my-height remaining
+
+
+def all (values)
+  if (not values)
+    return true
+
+  set current (first values)
+  if (not current)
+    return false
+  
+  set remaining (rest values)
+  return (all remaining)
+
+
+def tree-visible (grid x y)
+  set my-height (get-cell grid x y)
+  set sight-lines
+    list
+      get-sight-line grid x y 0 1 nil
+      get-sight-line grid x y 0 -1 nil
+      get-sight-line grid x y 1 0 nil
+      get-sight-line grid x y -1 0 nil
+  set lines-higher
+    map
+      lambda (sight-line) (any-higher my-height sight-line)
+      sight-lines
+  set all-higher (all lines-higher)
+  return (not all-higher)
+
+
+def map-row (grid width y func)
+  return
+    map
+      lambda (x) (func grid x y)
+      range width
+
+# todo make a cartesian function
+
+def map-grid (grid func)
+  set height (length grid)
+  set wdith
+    length (first grid)
+  
+
+
 def main (args)
   set lines (read-all)
   set grid (make-grid lines)
   print grid
-  print (get-cell grid 0 0)
-  print (get-cell grid 4 3)
+  print (get-cell grid 2 3)
+  print (get-sight-line grid 2 3 0 -1 nil)
+  print (tree-visible grid 2 3)
   return 0
