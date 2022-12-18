@@ -1,0 +1,150 @@
+import "comparison"
+import "control"
+import "destructuring"
+import "functional"
+import "io"
+import "lists"
+import "math"
+import "strings"
+
+import "utils"
+
+
+def make-row (line accumulated)
+  if (not line)
+    return (reverse accumulated)
+
+  set char (substr line 0 1)
+  set remaining
+    if (equal
+          strlen line
+          1)
+      ""
+      substr line 1 (strlen line)
+  set number (string-to-integer char)
+  set next-accumulated (prepend number accumulated)
+
+  return (make-row remaining next-accumulated)
+
+
+def make-grid (lines)
+  return
+    map
+      lambda (line) (make-row line nil)
+      lines
+
+
+def get-cell (grid x y)
+  set row (index grid y)
+  set cell (index row x)
+  return cell
+
+
+def maybe-get-cell (grid x y)
+  return
+    guard
+      lambda (e) nil
+      lambda () (get-cell grid x y)
+
+
+def get-sight-line (grid x-start y-start x-offset y-offset accumulated)
+  set x (+ x-start x-offset)
+  set y (+ y-start y-offset)
+  set cell (maybe-get-cell grid x y)
+
+  if (equal cell nil)
+    return (reverse accumulated)
+
+  set next-accumulated (prepend cell accumulated)
+  return
+    get-sight-line grid x y x-offset y-offset next-accumulated
+
+
+def viewing-distance (my-height sight-line accumulated)
+  if (not sight-line)
+    return accumulated
+
+  set next-accumulated (+ 1 accumulated)
+  set other (first sight-line)
+  if (>= other my-height)
+    return next-accumulated
+
+  set remaining (rest sight-line)
+  return
+    viewing-distance my-height remaining next-accumulated
+
+
+def tree-score (grid coords)
+  set-many (x y) coords
+  print "Considering" x y
+  set my-height (get-cell grid x y)
+  set sight-lines
+    list
+      get-sight-line grid x y 0 1 nil
+      get-sight-line grid x y 0 -1 nil
+      get-sight-line grid x y 1 0 nil
+      get-sight-line grid x y -1 0 nil
+
+  set distances
+    map
+      lambda (sight-line) (viewing-distance my-height sight-line 0)
+      sight-lines
+
+  set score (reduce * distances)
+  return score
+
+
+def maybe-append (maybe-list to-append)
+  if (equal
+        type maybe-list
+        "list")
+    return (append maybe-list to-append)
+    return (list maybe-list to-append)
+
+
+def combinations-helper (left right)
+  set nested
+    map
+      lambda (a)
+        map
+          lambda(b) (maybe-append a b)
+          right
+      left
+
+  set flat (apply extend nested)
+
+  return flat
+
+
+def cartesian (sequences ...)
+  return
+    reduce
+      combinations-helper
+      sequences
+
+
+def main (args)
+  set lines (read-all)
+
+  set grid (make-grid lines)
+
+  set height (length grid)
+  set width
+    length (first grid)
+  set all-coords
+    cartesian (range width) (range height)
+
+  set results
+    map
+      lambda (coords)
+        list (tree-score grid coords) coords
+      all-coords
+
+  set sorted (tail-sort results)
+  set best (last sorted)
+  print best
+
+  return 0
+
+
+(export-all)

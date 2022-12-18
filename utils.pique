@@ -1,4 +1,5 @@
 import "comparison"
+import "control"
 import "destructuring"
 import "io"
 import "lists"
@@ -80,6 +81,48 @@ def replace-index (the-list index new-value)
 export replace-index
 
 
+def compare-lists (a b)
+  if (and
+        not a
+        not b)
+    return 0
+
+  if (or
+        not a
+        not b)
+    raise "Tuples are not of equal length"
+
+  set a-item (first a)
+  set b-item (first b)
+  set comparison (smart-compare a-item b-item)
+
+  switch
+    case (equal comparison 1)
+      return 1
+    case (equal comparison 0)
+      return
+        compare-lists (rest a) (rest b)
+    case (equal comparison -1)
+      return -1
+    default
+      raise "not reachable"
+
+
+def smart-compare (a b)
+  if (and
+        equal (type a) "list"
+        equal (type b) "list")
+    return (compare-lists a b)
+    return (compare a b)
+
+
+def smart-le (a b)
+  set comparison (smart-compare a b)
+  return (or
+            equal comparison -1
+            equal comparison 0)
+
+
 def maybe-next-two (the-list)
   if (equal the-list nil)
     return
@@ -123,7 +166,7 @@ def choose-first (a b)
 
   set a-value (first a)
   set b-value (first b)
-  return (<= a-value b-value)
+  return (smart-le a-value b-value)
 
 
 def merge (a b accumulated pending finished)
@@ -147,7 +190,7 @@ def merge (a b accumulated pending finished)
 
 
 def sorted-pair (a b)
-  if (<= a b)
+  if (smart-le a b)
     return (list a b)
     return (list b a)
 
