@@ -4,6 +4,7 @@ import "destructuring"
 import "functional"
 import "io"
 import "lists"
+import "math"
 import "strings"
 
 import "utils"
@@ -65,7 +66,7 @@ def any-higher (my-height sight-line)
 
   set other (first sight-line)
   set remaining (rest sight-line)
-  if (<= other my-height)
+  if (>= other my-height)
     return true
 
   return
@@ -84,7 +85,9 @@ def all (values)
   return (all remaining)
 
 
-def tree-visible (grid x y)
+def tree-visible (grid coords)
+  set-many (x y) coords
+  print "Considering" x y
   set my-height (get-cell grid x y)
   set sight-lines
     list
@@ -100,26 +103,66 @@ def tree-visible (grid x y)
   return (not all-higher)
 
 
-def map-row (grid width y func)
-  return
+def maybe-append (maybe-list to-append)
+  if (equal
+        type maybe-list
+        "list")
+    return (append maybe-list to-append)
+    return (list maybe-list to-append)
+
+
+def combinations-helper (left right)
+  set nested
     map
-      lambda (x) (func grid x y)
-      range width
+      lambda (a)
+        map
+          lambda(b) (maybe-append a b)
+          right
+      left
 
-# todo make a cartesian function
+  set flat (apply extend nested)
 
-def map-grid (grid func)
-  set height (length grid)
-  set wdith
-    length (first grid)
-  
+  return flat
+
+
+def cartesian (sequences ...)
+  return
+    reduce
+      combinations-helper
+      sequences
 
 
 def main (args)
   set lines (read-all)
   set grid (make-grid lines)
-  print grid
-  print (get-cell grid 2 3)
-  print (get-sight-line grid 2 3 0 -1 nil)
-  print (tree-visible grid 2 3)
+  # print grid
+  # print (get-cell grid 2 3)
+  # print (get-sight-line grid 2 3 0 -1 nil)
+  # print
+  #   tree-visible grid (list 2 3)
+
+  set height (length grid)
+  set width
+    length (first grid)
+  set all-coords
+    cartesian (range width) (range height)
+
+  set results
+    map
+      lambda (coords)
+        list coords (tree-visible grid coords)
+      all-coords
+
+  # TODO: I need a way to un-wrap each item of the list as arguments
+  # to the mapper function so I can use lambdas easily.
+  set true-results
+    filter
+      lambda (item) (index item 1)
+      results
+
+  print (length true-results)
+
   return 0
+
+
+(export-all)

@@ -1,0 +1,37 @@
+import "destructuring"
+import "io"
+import "lists"
+
+
+def handle-error (e)
+  if (equal
+        (error-value e)
+        "EOF")
+    return (true "")
+    raise e
+
+
+def read-all-chain (accumulated)
+  set-many (eof value)
+    guard
+      handle-error
+      lambda ()
+        list false (input "")
+
+  if eof
+    return (reverse accumulated)
+
+  set next-accumulated
+    prepend value accumulated
+
+  return (read-all-chain next-accumulated)
+
+
+def read-all ()
+  return (read-all-chain nil)
+
+
+def main (args)
+  set value (read-all)
+  print value
+  return 0
